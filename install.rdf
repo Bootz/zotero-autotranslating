@@ -4,7 +4,7 @@
 		<em:id>webopac2zotero@rokdd</em:id>
 		<em:name>Zotero autotranslating</em:name>
 		<em:version>1.1.2</em:version>
-		<em:description>Connect Zotero site translators with Zotero in a automatic way</em:description>
+		<em:description>Connect Zotero site translator with Zotero in a automatic way</em:description>
 		<em:creator>Robert Kühn</em:creator>
 		<em:type>2</em:type> 
 		
