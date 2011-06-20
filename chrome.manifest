@@ -1,0 +1,5 @@
+content	zoteroautotranslating				chrome/content/zoteroautotranslating/
+locale	zoteroautotranslating	en-US		chrome/locale/en-US/zoteroautotranslating/
+skin	zoteroautotranslating	default		chrome/skin/default/zoteroautotranslating/
+
+overlay	chrome://browser/content/browser.xul	chrome://zoteroautotranslating/content/overlay.xul

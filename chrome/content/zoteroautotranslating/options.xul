@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="options.css" type="text/css"?>
+<prefwindow title="Zotero autotranslating" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" xmlns:html="http://www.w3.org/1999/xhtml" onload="setView();">
+	<prefpane label="Zotero autotranslating">
+		<preferences>
+			<preference name="extensions.zoteroautotranslating.jsonurl" type="string" />
+			<preference id="zotero-autotranslating-showdebug" name="extensions.zoteroautotranslating.showdebug" type="bool" />
+			<preference  id="zotero-autotranslating-deactivate" name="extensions.zoteroautotranslating.deactivate" type="bool" />
+		</preferences>
+		<groupbox>
+			<caption label="URL specific profiles"/>
+       <hbox align="center" >
+          <button label="Add" oncommand="addItem();"/>
+          <button label="Delete" oncommand="deleteSelection();"/>
+       </hbox>
+       <separator class="thin"  />
+        <tree id="optTree" height="200" width="600" flex="1" hidecolumnpicker="true" seltype="single" editable="true" >
+                   <treecols>
+             <treecol id="titel" label="Title" primary="true" flex="1" persist="width ordinal hidden" width="200"/>
+             <splitter class="tree-splitter"/>
+             <treecol id="url" label="URL" persist="width ordinal hidden"  width="200" flex="2"/>
+             <splitter class="tree-splitter"/>
+             <treecol id="boolInsertItem" label="+/- item" persist="width ordinal hidden" flex="1" width="50" />
+             <splitter class="tree-splitter"/>
+             <treecol id="boolUpdateItem" label="+/- property" persist="width ordinal hidden" flex="1" width="50" />
+             <splitter class="tree-splitter"/>
+             <treecol id="field" label="Ident" persist="width ordinal hidden" flex="3" width="150" />
+             <splitter class="tree-splitter"/>
+             <treecol id="intSecWait" label="sec" persist="width ordinal hidden"  flex="4"  width="20" />
+             <splitter class="tree-splitter"/>
+             <treecol id="translatorid" label="translator" persist="width ordinal hidden"  flex="5"  width="150" />
+              </treecols>
+             <treechildren id="rows"/>
+          </tree>
+       <separator class="thin" />
+       <label value="To edit a item doubleclick on it" />
+       <label>
+       <html:ul>
+			<html:li><html:b>title</html:b>: title of the page you want to scrape<html:ul><html:li><html:b>regexp</html:b> use a regexp without modifier </html:li><html:li><html:b>stristr</html:b> a simple string that have to be contained </html:li><html:li><html:b>empty</html:b> leave empty to ignore</html:li></html:ul></html:li>
+			<html:li><html:b>url</html:b>: url of the page you want to scrape  <html:ul><html:li><html:b>regexp</html:b> use a regexp without modifier </html:li><html:li><html:b>stristr</html:b> a simple string that have to be contained </html:li><html:li><html:b>empty</html:b> leave empty to ignore</html:li></html:ul></html:li>
+			<html:li><html:b>ident</html:b>:  name of field which indicate doubles in your zotero libary if you do not like to check duplicates set to 'false' . the fieldname list you can get <label class="weblink" onclick="openLink('http://www.zotero.org/support/dev/api_user_docs/search_fields');" value="zotero documentation" /></html:li>
+			<html:li><html:b>+/- item</html:b>: specify what with detected items happens<html:ul><html:li><html:b>+</html:b> add always</html:li><html:li><html:b>-</html:b> add never new items</html:li><html:li><html:b>?</html:b> add new item if item does not exist (setup the ident field!)</html:li></html:ul></html:li>
+			<html:li><html:b>+/- property</html:b>: specify what with the propertys of detected items happens<html:ul><html:li><html:b>+</html:b> overwrite propertys and item type always and add not existing tags</html:li><html:li><html:b>-</html:b> add no propertys</html:li><html:li><html:b>?</html:b> add property  if is not set and add new tags</html:li></html:ul></html:li>
+			<html:li><html:b>translator</html:b>:  the translator you want to execute<html:ul><html:li><html:b>*</html:b>  uses the first translator whichs available on the sites. the translator might differ depening on page and zotero updates</html:li><html:li><html:b>Label</html:b> enter the label of the translator exactly. you can trigger by  hovering about the icon in urlbar</html:li><html:li><html:b>xyzzzz-xyyzzz-..</html:b> the the translator id to specify the translator (you can get id or label by enabling the log of this addon and check the error console messages for such line: Potential translator: #label, #creator (#id) )</html:li></html:ul></html:li>
+       </html:ul>
+       </label>
+       </groupbox>
+       <groupbox>
+			<caption label="General settings"/>
+			<checkbox id="pref-showdebug" label="Log message to console to encounter problems" preference="zotero-autotranslating-showdebug"/>
+			<checkbox id="pref-deactivate"  label="Deactivate scraping all pages and translate nothing automatically " preference="zotero-autotranslating-deactivate"/>
+		</groupbox>
+		<groupbox>
+			<caption label="Support and feature requests"/>
+			<label>For suggestions, troubles or help , please inform on <label class="weblink" onclick="openLink('http://rokdd.de/t/zotero/');" value="my homepage"/> about current known issues . Write a comment there or use the homepage contact to report if necessary</label>
+			</groupbox>
+    </prefpane>
+    <script>
+    <![CDATA[
+
+function openLink(aUrl)
+	{
+	window.opener.openURL(aUrl);
+	}
+
+    var treeView = {
+        model : [],
+        treeBox: null,
+        get rowCount(){return this.model.length;},
+        getCellText : function(row,column) { return this.model[row][column.id]; },
+        //rowCount : function(){return this.model.length;},
+        setTree: function(treeBox){ this.treeBox = treeBox; },
+        isContainer: function(row){ return false; },
+        isEditable: function(idx, column)  { return true; },
+        isSeparator: function(row){ return false; },
+        isSorted: function(){ return false; },
+        getLevel: function(row){ return 0; },
+        getImageSrc: function(row,col){ return null; },
+        getRowProperties: function(row,props){},
+        getCellProperties: function(row,col,props){},
+        getColumnProperties: function(colid,col,props){},
+        setCellText: function (row, col, val){
+           var t = this.model[row];
+       t[col.id] =val;
+
+        }
+    };
+
+    function setView(){
+       prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+       try {
+          var str = prefManager.getCharPref("extensions.zoteroautotranslating.jsonurl");
+          treeView.model = JSON.parse(str);
+        } catch (err) {
+          treeView.model = [];
+       }
+       LOG("setView " + treeView.model.length);
+       document.getElementById('optTree').view = treeView;
+        }
+
+    function deleteSelection(){
+       var t = document.getElementById('optTree');
+       treeView.model.splice(t.currentIndex, 1);
+       treeView.treeBox.rowCountChanged(t.currentIndex, -1);
+      }
+
+    function addItem(){
+       treeView.model[treeView.model.length] =  {titel:"new title", boolUpdateItem:'-',boolInsertItem:'?',url:"new url", field:"archiveLocation",intSecWait: '0',translatorid:"xyz-xyz"};
+       treeView.treeBox.rowCountChanged(treeView.model.length-1, 1);
+    }
+
+    function saveList(){
+       var str = JSON.stringify(treeView.model);
+       LOG(str);
+       prefManager = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+       prefManager.setCharPref("extensions.zoteroautotranslating.jsonurl", str);
+       
+       Zotero.AutoTranslator.init();
+    }
+
+    function LOG(msg) {
+         var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+       consoleService.logStringMessage(msg);
+       window.addEventListener('unload', saveList, false);
+    }
+    ]]>    
+    </script>
+
+</prefwindow>
